@@ -1,8 +1,6 @@
 hash: c31a2b4fd8f54ddbc2e63075adbcc3f020b149f177b59404382793c089b66925
-updated: 2017-01-25T14:42:30.030970335+05:30
+updated: 2017-01-25T16:48:34.972072857+05:30
 imports:
-- name: github.com/bmizerany/pq
-  version: da2b95e392c172df0be322eadc19a90b0f771548
 - name: github.com/gin-gonic/gin
   version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
 - name: github.com/golang/protobuf
@@ -10,7 +8,7 @@ imports:
   subpackages:
   - proto
 - name: github.com/RetailMarket/priceManagerClient
-  version: 52ee3ee5b41a9b5b3a8a95ed38b1c80c6dfee48d
+  version: 481fbc026cd0097e348fdd5eed01175b4959824b
 - name: github.com/RetailMarket/workFlowClient
   version: 870f1f04fed40c24f878cf21c5aba45e5a494426
 - name: golang.org/x/net
@@ -18,11 +16,11 @@ imports:
   subpackages:
   - context
   - http2
-  - trace
   - http2/hpack
   - idna
-  - lex/httplex
   - internal/timeseries
+  - lex/httplex
+  - trace
 - name: google.golang.org/grpc
   version: 50955793b0183f9de69bd78e2ec251cf20aab121
   subpackages:
@@ -32,8 +30,8 @@ imports:
   - internal
   - metadata
   - naming
+  - peer
   - stats
   - tap
   - transport
-  - peer
-devImports: []
+testImports: []
