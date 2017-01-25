@@ -15,45 +15,50 @@ func SendUpdatePriceForApprovalJob() {
 }
 
 func sendPendingRequestForApproval() {
-	for range time.Tick(time.Second * 10) {
+	for range time.Tick(time.Second * 2) {
 		log.Println("Fetching pending update requests...")
 
-		priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{});
-		log.Printf("%v\n", priceServiceResponse.Products)
+		priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
+		log.Printf("Processing records : %v\n", priceServiceResponse.Products)
 
 		if (err != nil) {
-			log.Printf("Failed while fetching price update records\nError: %v", err);
-			continue;
+			log.Printf("Failed while fetching price update records\nError: %v", err)
+			continue
 		}
 
-		if (len(priceServiceResponse.GetProducts()) != 0) {
-			workflowRequest := createRequestForWorkflow(priceServiceResponse)
+		records := priceServiceResponse.GetProducts()
+		if (len(records) != 0) {
+			workflowRequest := createRequestForWorkflow(records)
 
 			workflowResponse, err := clients.WorkflowClient.SaveUpdatePriceForApproval(context.Background(), workflowRequest)
 			if err != nil {
 				log.Printf("Failed to send pending update requests for approval \n err: %v\n", err)
-				continue;
+				continue
 			}
-			log.Printf("Response: %s", workflowResponse.Message)
+			log.Printf("Workflow Response: %s", workflowResponse.Message)
+			updateStatus(records)
 		}
-
-		//updateStatus(rows);
 	}
 }
 
-func createRequestForWorkflow(response *priceManager.FetchRecordsResponse) *workflow.PriceUpdateRequest {
+func createRequestForWorkflow(records []*priceManager.ProductEntry) *workflow.PriceUpdateRequest {
 	request := &workflow.PriceUpdateRequest{}
-	products := response.GetProducts()
-	for i := 0; i < len(products); i++ {
+	for i := 0; i < len(records); i++ {
 		priceObj := workflow.Product{
-			ProductId: products[i].ProductId,
-			Version: products[i].Version}
+			ProductId: records[i].ProductId,
+			Version: records[i].Version}
 		request.Products = append(request.Products, &priceObj)
 	}
-	return request;
+	return request
 }
 
-//func updateStatus() {
-//	clients.PriceManagerClient.ChangeStatusToPicked(context.Background(), )
-//}
+func updateStatus(records []*priceManager.ProductEntry) {
+	request := &priceManager.ChangeStatusRequest{Products:records}
+	response, err := clients.PriceManagerClient.ChangeStatusToPicked(context.Background(), request)
+	if (err != nil) {
+		log.Printf("Unable to change status to picked for entries %v\n Error: %v", records, err)
+	} else {
+		log.Printf("%v\n", response)
+	}
+}
 
