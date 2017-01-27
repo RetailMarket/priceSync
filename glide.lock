@@ -1,5 +1,5 @@
 hash: c31a2b4fd8f54ddbc2e63075adbcc3f020b149f177b59404382793c089b66925
-updated: 2017-01-25T16:48:34.972072857+05:30
+updated: 2017-01-27T10:07:19.919897302+05:30
 imports:
 - name: github.com/gin-gonic/gin
   version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
@@ -10,7 +10,7 @@ imports:
 - name: github.com/RetailMarket/priceManagerClient
   version: 481fbc026cd0097e348fdd5eed01175b4959824b
 - name: github.com/RetailMarket/workFlowClient
-  version: 870f1f04fed40c24f878cf21c5aba45e5a494426
+  version: 27e8fa4c96f8063a6609afe4da95acfe31fc3ca3
 - name: golang.org/x/net
   version: f2499483f923065a842d38eb4c7f1927e6fc6e6d
   subpackages:
