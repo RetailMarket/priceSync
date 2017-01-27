@@ -11,11 +11,11 @@ import (
 
 func SendUpdatePriceForApprovalJob() {
 	sendPendingRequestForApproval()
-	time.Sleep(time.Second * 10000)
+	time.Sleep(time.Second * 100000)
 }
 
 func sendPendingRequestForApproval() {
-	for range time.Tick(time.Second * 2) {
+	for range time.Tick(time.Second * 5) {
 		log.Println("Fetching pending update requests...")
 
 		priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
@@ -41,8 +41,8 @@ func sendPendingRequestForApproval() {
 	}
 }
 
-func createRequestForWorkflow(records []*priceManager.ProductEntry) *workflow.PriceUpdateRequest {
-	request := &workflow.PriceUpdateRequest{}
+func createRequestForWorkflow(records []*priceManager.ProductEntry) *workflow.ProductsRequest {
+	request := &workflow.ProductsRequest{}
 	for i := 0; i < len(records); i++ {
 		priceObj := workflow.Product{
 			ProductId: records[i].ProductId,
