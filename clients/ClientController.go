@@ -20,7 +20,7 @@ const (
 	PRICE_MANAGER_ADDRESS = "localhost:3000"
 )
 
-func createWorkflowConnection() (workflow.WorkFlowClient, *grpc.ClientConn) {
+func createWorkflowClientConnection() (workflow.WorkFlowClient, *grpc.ClientConn) {
 	conn, err := grpc.Dial(WORK_FLOW_ADDRESS, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -39,13 +39,8 @@ func createPriceManagerClientConnection() (priceManager.PriceManagerClient, *grp
 }
 
 func CreateClientConnection() {
-	WorkflowClient, workflowConn = createWorkflowConnection()
+	WorkflowClient, workflowConn = createWorkflowClientConnection()
 	PriceManagerClient, priceManagerConn = createPriceManagerClientConnection()
-}
-
-type clientDetails struct {
-	client     interface{}
-	connection *grpc.ClientConn
 }
 
 func CloseConnections() {
