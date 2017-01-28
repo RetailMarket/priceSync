@@ -19,14 +19,14 @@ func sendPendingRequestForApproval() {
 		log.Println("Fetching pending update requests...")
 
 		priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
-		log.Printf("Processing records : %v\n", priceServiceResponse.Products)
+		log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
 
 		if (err != nil) {
 			log.Printf("Failed while fetching price update records\nError: %v", err)
 			continue
 		}
 
-		records := priceServiceResponse.GetProducts()
+		records := priceServiceResponse.GetEntries()
 		if (len(records) != 0) {
 			workflowRequest := createRequestForWorkflow(records)
 
@@ -41,7 +41,7 @@ func sendPendingRequestForApproval() {
 	}
 }
 
-func createRequestForWorkflow(records []*priceManager.ProductEntry) *workflow.ProductsRequest {
+func createRequestForWorkflow(records []*priceManager.Entry) *workflow.ProductsRequest {
 	request := &workflow.ProductsRequest{}
 	for i := 0; i < len(records); i++ {
 		priceObj := workflow.Product{
@@ -52,9 +52,9 @@ func createRequestForWorkflow(records []*priceManager.ProductEntry) *workflow.Pr
 	return request
 }
 
-func updateStatus(records []*priceManager.ProductEntry) {
-	request := &priceManager.ChangeStatusRequest{Products:records}
-	response, err := clients.PriceManagerClient.ChangeStatusToPicked(context.Background(), request)
+func updateStatus(records []*priceManager.Entry) {
+	request := &priceManager.NotifyRequest{Entries:records}
+	response, err := clients.PriceManagerClient.NotifySuccessfullyPicked(context.Background(), request)
 	if (err != nil) {
 		log.Printf("Unable to change status to picked for entries %v\n Error: %v", records, err)
 	} else {
