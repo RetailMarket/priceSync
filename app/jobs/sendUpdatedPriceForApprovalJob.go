@@ -11,7 +11,7 @@ import (
 func SendUpdatePriceForApprovalJob() {
 	log.Println("Fetching pending update requests...")
 
-	priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
+	priceServiceResponse, err := clients.PriceManagerClient.PriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
 	log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
 
 	if (err != nil) {
