@@ -1,5 +1,5 @@
 hash: c31a2b4fd8f54ddbc2e63075adbcc3f020b149f177b59404382793c089b66925
-updated: 2017-01-27T17:42:57.693981302+05:30
+updated: 2017-01-30T10:41:45.477473762+05:30
 imports:
 - name: github.com/gin-gonic/gin
   version: e2212d40c62a98b388a5eb48ecbdcf88534688ba
@@ -7,6 +7,8 @@ imports:
   version: 8ee79997227bf9b34611aee7946ae64735e6fd93
   subpackages:
   - proto
+- name: github.com/jasonlvhit/gocron
+  version: 42a5804d37aa0b9239b265e894a16b8edbf52d54
 - name: github.com/RetailMarket/priceManagerClient
   version: 25b129dfa5fef887cdacfa13f81ea5245ef49db2
 - name: github.com/RetailMarket/workFlowClient

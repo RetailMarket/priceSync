@@ -5,39 +5,31 @@ import (
 	workflow "github.com/RetailMarket/workFlowClient"
 	priceManager "github.com/RetailMarket/priceManagerClient"
 	"golang.org/x/net/context"
-	"time"
 	"Retail/priceSync/clients"
 )
 
 func SendUpdatePriceForApprovalJob() {
-	sendPendingRequestForApproval()
-	time.Sleep(time.Second * 100000)
-}
+	log.Println("Fetching pending update requests...")
 
-func sendPendingRequestForApproval() {
-	for range time.Tick(time.Second * 5) {
-		log.Println("Fetching pending update requests...")
+	priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
+	log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
 
-		priceServiceResponse, err := clients.PriceManagerClient.GetPriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
-		log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
+	if (err != nil) {
+		log.Printf("Failed while fetching price update records\nError: %v", err)
+		return
+	}
 
-		if (err != nil) {
-			log.Printf("Failed while fetching price update records\nError: %v", err)
-			continue
+	records := priceServiceResponse.GetEntries()
+	if (len(records) != 0) {
+		workflowRequest := createRequestForWorkflow(records)
+
+		workflowResponse, err := clients.WorkflowClient.SaveUpdatePriceForApproval(context.Background(), workflowRequest)
+		if err != nil {
+			log.Printf("Failed to send pending update requests for approval \n err: %v\n", err)
+			return
 		}
-
-		records := priceServiceResponse.GetEntries()
-		if (len(records) != 0) {
-			workflowRequest := createRequestForWorkflow(records)
-
-			workflowResponse, err := clients.WorkflowClient.SaveUpdatePriceForApproval(context.Background(), workflowRequest)
-			if err != nil {
-				log.Printf("Failed to send pending update requests for approval \n err: %v\n", err)
-				continue
-			}
-			log.Printf("Workflow Response: %s", workflowResponse.Message)
-			updateStatus(records)
-		}
+		log.Printf("Workflow Response: %s", workflowResponse.Message)
+		updateStatus(records)
 	}
 }
 
