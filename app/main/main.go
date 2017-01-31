@@ -12,4 +12,6 @@ func main() {
 
 	// running job for sending update price record for approval.
 	gocron.Every(5).Seconds().Do(jobs.SendUpdatePriceForApprovalJob)
+	<-gocron.Start()
+	defer gocron.Clear()
 }
