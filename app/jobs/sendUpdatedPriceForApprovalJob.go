@@ -11,7 +11,7 @@ import (
 func SendUpdatePriceForApprovalJob() {
 	log.Println("Fetching pending update requests...")
 
-	priceServiceResponse, err := clients.PriceManagerClient.PriceUpdateRecords(context.Background(), &priceManager.FetchRecordsRequest{})
+	priceServiceResponse, err := clients.PriceManagerClient.PendingRecords(context.Background(), &priceManager.Request{})
 	log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
 
 	if (err != nil) {
@@ -21,32 +21,32 @@ func SendUpdatePriceForApprovalJob() {
 
 	records := priceServiceResponse.GetEntries()
 	if (len(records) != 0) {
-		workflowRequest := createRequestForWorkflow(records)
+		err := notifyWorkflowService(records)
 
-		workflowResponse, err := clients.WorkflowClient.SaveUpdatePriceForApproval(context.Background(), workflowRequest)
 		if err != nil {
 			log.Printf("Failed to send pending update requests for approval \n err: %v\n", err)
 			return
 		}
-		log.Printf("Workflow Response: %s", workflowResponse.Message)
-		updateStatus(records)
+		notifyPriceManagerService(records)
 	}
 }
 
-func createRequestForWorkflow(records []*priceManager.Entry) *workflow.ProductsRequest {
-	request := &workflow.ProductsRequest{}
+func notifyWorkflowService(records []*priceManager.Entry) error {
+	request := &workflow.Records{}
 	for i := 0; i < len(records); i++ {
-		priceObj := workflow.Product{
+		priceObj := workflow.Entry{
 			ProductId: records[i].ProductId,
 			Version: records[i].Version}
-		request.Products = append(request.Products, &priceObj)
+		request.Entries = append(request.Entries, &priceObj)
 	}
-	return request
+	workflowResponse, err := clients.WorkflowClient.NotifyRecordsPicked(context.Background(), request)
+	log.Printf("Workflow Response: %s", workflowResponse.Message)
+	return err;
 }
 
-func updateStatus(records []*priceManager.Entry) {
-	request := &priceManager.NotifyRequest{Entries:records}
-	response, err := clients.PriceManagerClient.NotifySuccessfullyPicked(context.Background(), request)
+func notifyPriceManagerService(records []*priceManager.Entry) {
+	request := &priceManager.Records{Entries:records}
+	response, err := clients.PriceManagerClient.NotifyRecordsPicked(context.Background(), request)
 	if (err != nil) {
 		log.Printf("Unable to change status to picked for entries %v\n Error: %v", records, err)
 	} else {
