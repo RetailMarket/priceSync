@@ -6,21 +6,25 @@ import (
 	priceManager "github.com/RetailMarket/priceManagerClient"
 	"golang.org/x/net/context"
 	"Retail/priceSync/clients"
+	"encoding/json"
 )
 
 func SendUpdatePriceForApprovalJob() {
 	log.Println("Fetching pending update requests...")
 
-	priceServiceResponse, err := clients.PriceManagerClient.PendingRecords(context.Background(), &priceManager.Request{})
-	log.Printf("Processing records : %v\n", priceServiceResponse.Entries)
+	records, err := clients.PriceManagerClient.PendingRecords(context.Background(), &priceManager.Request{})
 
 	if (err != nil) {
 		log.Printf("Failed while fetching price update records\nError: %v", err)
 		return
 	}
 
-	records := priceServiceResponse.GetEntries()
-	if (len(records) != 0) {
+	log.Printf("Processing records : %v\n", records.GetEntries())
+
+	notifyService(records)
+}
+func notifyService(records *priceManager.Records) {
+	if (len(records.GetEntries()) != 0) {
 		err := notifyWorkflowService(records)
 
 		if err != nil {
@@ -31,22 +35,21 @@ func SendUpdatePriceForApprovalJob() {
 	}
 }
 
-func notifyWorkflowService(records []*priceManager.Entry) error {
+func notifyWorkflowService(records *priceManager.Records) error {
 	request := &workflow.Records{}
-	for i := 0; i < len(records); i++ {
-		priceObj := workflow.Entry{
-			ProductId: records[i].ProductId,
-			Version: records[i].Version}
-		request.Entries = append(request.Entries, &priceObj)
+	recordsInBytes, err := json.Marshal(records);
+	if (err != nil) {
+		log.Printf("Unable to marshal records: %v", records.GetEntries())
 	}
+	json.Unmarshal(recordsInBytes, request)
+
 	workflowResponse, err := clients.WorkflowClient.NotifyRecordsPicked(context.Background(), request)
 	log.Printf("Workflow Response: %s", workflowResponse.Message)
 	return err;
 }
 
-func notifyPriceManagerService(records []*priceManager.Entry) {
-	request := &priceManager.Records{Entries:records}
-	response, err := clients.PriceManagerClient.NotifyRecordsPicked(context.Background(), request)
+func notifyPriceManagerService(records *priceManager.Records) {
+	response, err := clients.PriceManagerClient.NotifyRecordsPicked(context.Background(), records)
 	if (err != nil) {
 		log.Printf("Unable to change status to picked for entries %v\n Error: %v", records, err)
 	} else {
