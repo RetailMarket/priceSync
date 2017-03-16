@@ -1,8 +1,8 @@
 package main
 
 import (
-	clients "Retail/priceSync/clients"
-	"Retail/priceSync/app/jobs"
+	"Retail/priceSync/clients"
+	"Retail/priceSync/jobs"
 	"github.com/jasonlvhit/gocron"
 )
 
